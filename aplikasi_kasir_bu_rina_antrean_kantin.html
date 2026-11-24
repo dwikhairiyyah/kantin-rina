@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kasir Bu Rina & Antrean Kantin</title>
+<style>
+:root{--navy:#172554;--blue:#2563eb;--sky:#dbeafe;--bg:#f4f7fb;--white:#fff;--ink:#172033;--muted:#64748b;--green:#16a34a;--orange:#f59e0b;--red:#dc2626;--border:#e2e8f0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+header{background:linear-gradient(120deg,#172554,#2563eb);color:white;padding:26px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(22px,4vw,30px)}header p{margin:4px 0 0;color:#dbeafe}
+.wrap{max-width:1200px;margin:auto;padding:22px 4% 45px}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+.tab{border:0;padding:12px 18px;border-radius:12px;background:#e2e8f0;color:#334155;font-weight:700;cursor:pointer}
+.tab.active{background:var(--navy);color:white}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.card{background:white;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 3px 12px #0f172a08}
+h2,h3{margin:0 0 13px}h2{font-size:22px}h3{font-size:17px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:#eff6ff;border-radius:14px;padding:14px}.stat small{color:var(--muted)}.stat strong{display:block;font-size:22px;margin-top:3px}
+.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.product{border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px}
+.product .emoji{font-size:28px}.product strong{font-size:16px}.product button{margin-top:auto}
+button{border:0;background:var(--blue);color:white;border-radius:9px;padding:9px 12px;font-weight:650;cursor:pointer}
+button:hover{filter:brightness(.95)}button.secondary{background:#e2e8f0;color:#334155}button.danger{background:#fee2e2;color:#991b1b}button.green{background:var(--green)}
+input,select{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:10px;font:inherit;background:white}
+label{font-size:13px;color:#475569;font-weight:600;display:block;margin:9px 0 5px}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+.cart-list,.queue-list{display:flex;flex-direction:column;gap:9px}
+.cart-item,.queue-item{border:1px solid var(--border);border-radius:11px;padding:11px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.cart-item small,.queue-item small{color:var(--muted);display:block}
+.total{display:flex;justify-content:space-between;font-size:19px;font-weight:800;border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
+.empty{color:var(--muted);padding:20px;text-align:center}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:12px;font-weight:700}
+.badge.wait{background:#fef3c7;color:#92400e}.badge.ready{background:#dcfce7;color:#166534}.badge.done{background:#e2e8f0;color:#334155}
+.queue-item{align-items:flex-start}.queue-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.note{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px;color:#854d0e;font-size:13px;margin-top:15px}
+.receipt{background:#f8fafc;border:1px dashed #94a3b8;border-radius:12px;padding:14px;margin-top:12px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+@media(max-width:780px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.products{grid-template-columns:1fr 1fr}header{padding:22px 5%}}
+@media(max-width:430px){.products{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.row{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header>
+<div><h1>🍜 Kasir Bu Rina & Antrean Kantin</h1><p>Prototype digital sederhana untuk transaksi dan pemesanan kantin</p></div>
+<div><span class="badge" style="background:#dbeafe;color:#1e40af">Demo offline • Data tersimpan di browser</span></div>
+</header>
+<div class="wrap">
+<div class="tabs">
+<button class="tab active" onclick="showTab('kasir',this)">🧾 Aplikasi Kasir</button>
+<button class="tab" onclick="showTab('antrean',this)">🔢 Antrean Kantin</button>
+<button class="tab" onclick="showTab('produk',this)">⚙️ Kelola Menu</button>
+</div>
+
+<section id="kasir" class="panel active">
+<div class="stats">
+<div class="stat"><small>Transaksi hari ini</small><strong id="statTx">0</strong></div>
+<div class="stat"><small>Omzet tersimpan</small><strong id="statOmzet">Rp0</strong></div>
+<div class="stat"><small>Produk tersedia</small><strong id="statProduk">0</strong></div>
+</div>
+<div class="grid">
+<div class="card"><h2>Daftar Menu</h2><div class="products" id="productGrid"></div></div>
+<div class="card"><h2>Keranjang Belanja</h2><div id="cartList" class="cart-list"></div>
+<div class="total"><span>Total</span><span id="cartTotal">Rp0</span></div>
+<label>Uang pembayaran</label><input id="payInput" type="number" min="0" placeholder="Masukkan nominal pembayaran" oninput="updateChange()">
+<div class="total" style="font-size:16px"><span>Kembalian</span><span id="change">Rp0</span></div>
+<button class="green" style="width:100%;margin-top:12px" onclick="checkout()">Bayar & Simpan Transaksi</button>
+<button class="secondary" style="width:100%;margin-top:8px" onclick="clearCart()">Kosongkan keranjang</button>
+<div id="receipt"></div>
+</div>
+</div>
+</section>
+
+<section id="antrean" class="panel">
+<div class="stats">
+<div class="stat"><small>Menunggu</small><strong id="waitingCount">0</strong></div>
+<div class="stat"><small>Diproses</small><strong id="processingCount">0</strong></div>
+<div class="stat"><small>Siap diambil</small><strong id="readyCount">0</strong></div>
+</div>
+<div class="grid">
+<div class="card"><h2>Buat Pesanan</h2>
+<label>Nama pelanggan (opsional)</label><input id="customerName" placeholder="Contoh: Siti / siswa 12 RPL">
+<div class="products" id="queueProducts"></div>
+<div class="total"><span>Total pesanan</span><span id="queueTotal">Rp0</span></div>
+<button class="green" style="width:100%;margin-top:12px" onclick="placeOrder()">Ambil Nomor Antrean</button>
+<div id="newTicket"></div>
+</div>
+<div class="card"><h2>Daftar Antrean</h2><div class="toolbar"><button class="secondary" onclick="filterQueue('all')">Semua</button><button class="secondary" onclick="filterQueue('Menunggu')">Menunggu</button><button class="secondary" onclick="filterQueue('Diproses')">Diproses</button><button class="secondary" onclick="filterQueue('Siap')">Siap</button></div><div id="queueList" class="queue-list"></div></div>
+</div>
+<div class="note">Alur: pelanggan memilih menu → sistem memberi nomor → kasir mengubah status menjadi Diproses → Siap → Selesai. Status antrean dapat dipantau pada panel ini.</div>
+</section>
+
+<section id="produk" class="panel">
+<div class="grid">
+<div class="card"><h2>Tambah Menu / Produk</h2>
+<label>Nama produk</label><input id="newName" placeholder="Misalnya: Es Teh">
+<div class="row"><div><label>Harga (Rp)</label><input id="newPrice" type="number" min="1" placeholder="5000"></div><div><label>Emoji</label><input id="newEmoji" placeholder="🥤" maxlength="4"></div></div>
+<button style="width:100%;margin-top:12px" onclick="addProduct()">Tambah Produk</button>
+<h3 style="margin-top:20px">Menu yang tersedia</h3><div id="manageList" class="queue-list"></div>
+</div>
+<div class="card"><h2>Petunjuk penggunaan</h2>
+<ol><li>Tambah atau ubah daftar menu di tab Kelola Menu.</li><li>Kasir: klik produk untuk memasukkannya ke keranjang.</li><li>Masukkan uang pelanggan, lalu tekan Bayar.</li><li>Antrean: pelanggan pilih menu dan ambil nomor.</li><li>Kasir memperbarui status antrean sesuai proses memasak.</li></ol>
+<button class="danger" onclick="resetDemo()">Reset seluruh data demo</button>
+<div class="note">Reset menghapus menu tambahan, transaksi, keranjang, dan antrean dari penyimpanan browser.</div>
+</div></div>
+</section>
+<footer>Proyek XII RPL • Prototype untuk latihan kewirausahaan • Bukan sistem produksi</footer>
+</div>
+<script>
+const defaultProducts=[
+{id:1,name:"Nasi Goreng",price:12000,emoji:"🍛"},
+{id:2,name:"Mie Goreng",price:10000,emoji:"🍜"},
+{id:3,name:"Ayam Geprek",price:15000,emoji:"🍗"},
+{id:4,name:"Bakso",price:10000,emoji:"🍲"},
+{id:5,name:"Es Teh",price:4000,emoji:"🧋"},
+{id:6,name:"Air Mineral",price:3000,emoji:"💧"}
+];
+let products=JSON.parse(localStorage.getItem("rinaProducts")||"null")||defaultProducts;
+let transactions=JSON.parse(localStorage.getItem("rinaTransactions")||"[]");
+let orders=JSON.parse(localStorage.getItem("rinaOrders")||"[]");
+let cart={},queueCart={},queueFilter="all";
+const money=n=>"Rp"+Number(n||0).toLocaleString("id-ID");
+function persist(){localStorage.setItem("rinaProducts",JSON.stringify(products));localStorage.setItem("rinaTransactions",JSON.stringify(transactions));localStorage.setItem("rinaOrders",JSON.stringify(orders))}
+function showTab(id,btn){document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));document.getElementById(id).classList.add("active");btn.classList.add("active");renderAll()}
+function renderProducts(){productGrid.innerHTML=products.map(p=>`<div class="product"><span class="emoji">${p.emoji||"🍽️"}</span><strong>${esc(p.name)}</strong><span>${money(p.price)}</span><button onclick="addCart(${p.id})">+ Tambah</button></div>`).join("");queueProducts.innerHTML=products.map(p=>`<div class="product"><span class="emoji">${p.emoji||"🍽️"}</span><strong>${esc(p.name)}</strong><span>${money(p.price)}</span><button onclick="addQueueCart(${p.id})">+ Pesan</button></div>`).join("");manageList.innerHTML=products.map(p=>`<div class="queue-item"><div><strong>${p.emoji} ${esc(p.name)}</strong><small>${money(p.price)}</small></div><button class="danger" onclick="deleteProduct(${p.id})">Hapus</button></div>`).join("")}
+function addCart(id){cart[id]=(cart[id]||0)+1;renderCart()}
+function addQueueCart(id){queueCart[id]=(queueCart[id]||0)+1;renderQueueCart()}
+function cartSubtotal(obj){return Object.entries(obj).reduce((sum,[id,qty])=>sum+(products.find(p=>p.id==id)?.price||0)*qty,0)}
+function renderCart(){cartList.innerHTML=Object.entries(cart).length?Object.entries(cart).map(([id,q])=>{let p=products.find(x=>x.id==id);if(!p)return"";return `<div class="cart-item"><div><strong>${p.emoji} ${esc(p.name)}</strong><small>${q} x ${money(p.price)}</small></div><div><strong>${money(p.price*q)}</strong><button class="secondary" onclick="removeCart(${id})">−</button> <button class="secondary" onclick="addCart(${id})">+</button></div></div>`}).join(""):'<div class="empty">Keranjang masih kosong.</div>';cartTotal.textContent=money(cartSubtotal(cart));updateChange()}
+function renderQueueCart(){queueTotal.textContent=money(cartSubtotal(queueCart))}
+function removeCart(id){if(cart[id]>1)cart[id]--;else delete cart[id];renderCart()}
+function clearCart(){cart={};payInput.value="";receipt.innerHTML="";renderCart()}
+function updateChange(){let total=cartSubtotal(cart),paid=Number(payInput.value||0);change.textContent=money(Math.max(0,paid-total))}
+function checkout(){let total=cartSubtotal(cart),paid=Number(payInput.value||0);if(!total){alert("Keranjang masih kosong.");return}if(paid<total){alert("Uang pembayaran belum cukup.");return}
+let items=Object.entries(cart).map(([id,q])=>{let p=products.find(x=>x.id==id);return {name:p.name,price:p.price,qty:q}});let tx={id:Date.now(),time:new Date().toLocaleString("id-ID"),items,total,paid,change:paid-total};transactions.unshift(tx);persist();receipt.innerHTML=`<div class="receipt"><strong>✅ Transaksi berhasil!</strong><small>${tx.time}</small><p>Total: <b>${money(total)}</b><br>Bayar: ${money(paid)}<br>Kembalian: <b>${money(paid-total)}</b></p><button onclick="window.print()">Cetak / Simpan PDF</button></div>`;cart={};payInput.value="";renderCart();renderStats()}
+function placeOrder(){let total=cartSubtotal(queueCart);if(!total){alert("Pilih menu terlebih dahulu.");return}let items=Object.entries(queueCart).map(([id,q])=>{let p=products.find(x=>x.id==id);return {name:p.name,price:p.price,qty:q}});let next=Math.max(0,...orders.map(o=>o.number))+1;let order={id:Date.now(),number:next,name:customerName.value.trim()||"Pelanggan",items,total,status:"Menunggu",time:new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})};orders.unshift(order);persist();newTicket.innerHTML=`<div class="receipt"><h2>🎟️ Nomor antrean: ${String(next).padStart(3,"0")}</h2><strong>${esc(order.name)}</strong><p>${items.map(i=>`${esc(i.name)} × ${i.qty}`).join("<br>")}<br>Total: ${money(total)}</p><span class="badge wait">Menunggu</span></div>`;queueCart={};customerName.value="";renderQueueCart();renderQueue()}
+function nextStatus(status){return status==="Menunggu"?"Diproses":status==="Diproses"?"Siap":status==="Siap"?"Selesai":"Selesai"}
+function renderQueue(){let shown=orders.filter(o=>queueFilter==="all"||o.status===queueFilter);queueList.innerHTML=shown.length?shown.map(o=>`<div class="queue-item"><div><strong>Antrean ${String(o.number).padStart(3,"0")} • ${esc(o.name)}</strong><small>${o.time} • ${o.items.map(i=>`${esc(i.name)} ×${i.qty}`).join(", ")}</small><b>${money(o.total)}</b><br><span class="badge ${o.status==="Menunggu"?"wait":o.status==="Siap"?"ready":o.status==="Selesai"?"done":""}">${o.status}</span><div class="queue-actions">${o.status!=="Selesai"?`<button onclick="advance(${o.id})">Ubah → ${nextStatus(o.status)}</button>`:""}<button class="danger" onclick="deleteOrder(${o.id})">Hapus</button></div></div></div>`).join(""):'<div class="empty">Belum ada pesanan pada filter ini.</div>';waitingCount.textContent=orders.filter(o=>o.status==="Menunggu").length;processingCount.textContent=orders.filter(o=>o.status==="Diproses").length;readyCount.textContent=orders.filter(o=>o.status==="Siap").length}
+function filterQueue(f){queueFilter=f;renderQueue()}
+function advance(id){let o=orders.find(x=>x.id===id);if(o)o.status=nextStatus(o.status);persist();renderQueue()}
+function deleteOrder(id){orders=orders.filter(o=>o.id!==id);persist();renderQueue()}
+function renderStats(){statTx.textContent=transactions.length;statOmzet.textContent=money(transactions.reduce((s,t)=>s+t.total,0));statProduk.textContent=products.length}
+function addProduct(){let name=newName.value.trim(),price=Number(newPrice.value),emoji=newEmoji.value.trim()||"🍽️";if(!name||price<=0){alert("Isi nama dan harga yang benar.");return}products.push({id:Date.now(),name,price,emoji});newName.value="";newPrice.value="";newEmoji.value="";persist();renderAll()}
+function deleteProduct(id){if(!confirm("Hapus produk ini?"))return;products=products.filter(p=>p.id!==id);delete cart[id];delete queueCart[id];persist();renderAll()}
+function resetDemo(){if(!confirm("Yakin reset semua data demo?"))return;localStorage.removeItem("rinaProducts");localStorage.removeItem("rinaTransactions");localStorage.removeItem("rinaOrders");products=defaultProducts;transactions=[];orders=[];cart={};queueCart={};renderAll()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function renderAll(){renderProducts();renderCart();renderQueueCart();renderQueue();renderStats()}
+renderAll();
+</script>
+</body>
+</html>
